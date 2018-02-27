@@ -1,0 +1,25 @@
+{
+  "infra_dir": "/home/vlad/infra",
+
+  "envs": {
+    "VAGRANT_HOME": "$(shell pwd) / vagrant / home",
+    "VAGRANT_TOOLS": "$(shell pwd) / vagrant / tools",
+    "VAGRANT_ENV": "$(shell pwd) / vagrant / env"
+  },
+
+  "options": {
+    "PACKER_LOG": "0",
+    "PACKER_TEMPLATE": "packer/templates/$(IMAGE_NAME).json",
+    "PACKER_ROOT_PASSWORD": "get '.variables.ssh_password' from PACKER_TEMPLATE",
+    "PACKER_KICKSTART_CFG": "packer/http/$(IMAGE_NAME)-kickstart.cfg",
+    "PACKER_IMAGE_NAME": "centos7",
+    "PACKER_IMAGE_ARCH": "x86_64",
+    "PACKER_IMAGE_FORMAT": "raw",
+    "PACKER_OUTPUT_DIR": "artifacts",
+    "PACKER_OUTPUT_NAME": "{PACKER_OUTPUT_DIR}/{PACKER_IMAGE_NAME}-{PACKER_IMAGE_ARCH}.{PACKER_IMAGE_FORMAT}"
+  },
+
+  "terraform": {
+    "bin": "terraform"
+  }
+}
