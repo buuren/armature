@@ -3,13 +3,13 @@ import os
 
 
 class CLIScan(click.MultiCommand):
-    def __init__(self, module_path):
-        self.module_path = module_path
+    def __init__(self, cli_path):
+        self.cli_path = cli_path
         super().__init__(self)
 
     def list_modules(self):
         modules = []
-        for filename in os.listdir(self.module_path):
+        for filename in os.listdir(self.cli_path):
             if filename.endswith('.py'):
                 modules.append(filename[:-3])
         modules.sort()
@@ -21,7 +21,7 @@ class CLIScan(click.MultiCommand):
     def get_command(self, ctx, name):
         if name in self.list_modules():
             ns = {}
-            fn = os.path.join(self.module_path, name + '.py')
+            fn = os.path.join(self.cli_path, name + '.py')
 
             with open(fn) as f:
                 code = compile(f.read(), fn, 'exec')

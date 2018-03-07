@@ -5,7 +5,7 @@ class ConfigParser:
     def __init__(self, path):
         self.path_to_config = path
 
-    def return_json(self):
+    def return_json(self) -> dict:
         with open(self.path_to_config) as config_file:
             return json.load(config_file)
 

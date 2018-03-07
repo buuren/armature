@@ -1,25 +1,84 @@
 {
-  "infra_dir": "/home/vlad/infra",
-
-  "envs": {
-    "VAGRANT_HOME": "$(shell pwd) / vagrant / home",
-    "VAGRANT_TOOLS": "$(shell pwd) / vagrant / tools",
-    "VAGRANT_ENV": "$(shell pwd) / vagrant / env"
+  "docker_run_wrapper": "docker run -it --hostname={docker-image}-{docker-tag} -e USER=root --net=host --privileged -v {infra_dir}:{infra_dir} --rm --entrypoint /bin/bash {docker-image}:{docker-tag} -c ",
+  "docker_exec_wrapper": "docker run -it --hostname={docker-image}-{docker-tag} -e USER=root --net=host --privileged -v {infra_dir}:{infra_dir} --rm --entrypoint /bin/bash {docker-image}:{docker-tag} -c ",
+  
+  "variables": {
+    "infra_dir": "/home/vlad/infra",
+    "docker-image": "dev-tools",
+    "docker-tag": "latest",
+    "root_password": "root"
   },
 
-  "options": {
-    "PACKER_LOG": "0",
-    "PACKER_TEMPLATE": "packer/templates/$(IMAGE_NAME).json",
-    "PACKER_ROOT_PASSWORD": "get '.variables.ssh_password' from PACKER_TEMPLATE",
-    "PACKER_KICKSTART_CFG": "packer/http/$(IMAGE_NAME)-kickstart.cfg",
-    "PACKER_IMAGE_NAME": "centos7",
-    "PACKER_IMAGE_ARCH": "x86_64",
-    "PACKER_IMAGE_FORMAT": "raw",
-    "PACKER_OUTPUT_DIR": "artifacts",
-    "PACKER_OUTPUT_NAME": "{PACKER_OUTPUT_DIR}/{PACKER_IMAGE_NAME}-{PACKER_IMAGE_ARCH}.{PACKER_IMAGE_FORMAT}"
-  },
+  "modules": {
+    "awscli": "",
 
-  "terraform": {
-    "bin": "terraform"
+    "docker": {
+      "bin": {
+        "path": "/usr/bin/docker",
+        "default_args": ""
+      },
+
+      "cli": {
+        "build_dev_tools": {
+          "args": "/usr/bin/docker build -t={docker-image}:{docker-tag} --build-arg PACKER=1.2.0 --build-arg TERRAFORM=0.11.3 --build-arg VAGRANT=2.0.2 --build-arg AWSCLI=1.14.42 --build-arg GO=1.10 .",
+          "cwd": "dev-tools"
+        }
+      }
+    },
+
+    "bash": {
+      "bin": {
+        "path": "/bin/bash",
+        "default_args": ""
+      },
+
+      "cli": {
+        "spawn_shell": {
+          "args": "",
+          "cwd": ""
+        }
+      }
+    },
+
+    "packer": {
+      "bin": {
+        "path": "/opt/packer/packer",
+        "default_args": ""
+      },
+
+      "cli": {
+        "build_template": {
+          "args": "echo building template",
+          "cwd": "aws-ami/centos7"
+        },
+
+        "prepare_template": {
+          "argsf": "rm -rf rm -rf artifacts && sed -i -e 's/^rootpw.*/rootpw {root_password}/g' packer/http/centos7-kickstart.cfg",
+          "args": "echo prepare template",
+          "cwd": "aws-ami/centos7",
+          "before": [
+            "build_template"
+          ],
+          "after": [
+            "build_template"
+          ]
+        },
+
+        "validate_template": {
+          "argsf": "/opt/packer/packer validate packer/templates/centos7.json",
+          "args": "echo validate template",
+          "cwd": "aws-ami/centos7",
+          "before": [
+            "prepare_template"
+          ],
+          "after": [
+            "build_template"
+          ]
+        }
+      }
+    },
+
+    "terraform": "",
+    "vagrant": ""
   }
 }

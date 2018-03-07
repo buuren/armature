@@ -1,10 +1,9 @@
 import click
+from modules.executor import Executor
 
 
-class AwscliWrapper:
-    def __init__(self, terraform):
-        pass
-
+MODULE = "awscli"
+cli_executor = Executor(module=MODULE)
 
 @click.group()
 @click.option('--debug/--no-debug', default=False)
